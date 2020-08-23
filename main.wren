@@ -19,8 +19,10 @@ class Game {
     __LOCATIONDELAY = 15
 
     __ENTITIES = []
-    createEntity(20, 0)
-    createEntity(-10, 0)
+    createEntity(-20, 10)
+    createEntity(-20, 20)
+    createEntity(20, 20)
+    createEntity(2, 10)
   }
 
   static createEntity() {
@@ -43,12 +45,18 @@ class Game {
     return M.atan( entity["pos"][1] / entity["pos"][0] )
   }
 
+  static radToDeg(rad) {
+    return rad * 180 / Num.pi
+  }
+
   static distanceToEntity(entity) {
     return ( entity["pos"][0].pow(2) + entity["pos"][1].pow(2) ).sqrt
   }
 
   static panOfEntity(entity) {
-    return M.sin(getAngleOfEntity(entity))
+    var pan = M.sin(getAngleOfEntity(entity))
+    // shim until pan is fixed
+    return pan < -0.5 ? -1.0 : pan > 0.5 ? 1.0 : pan
   }
 
   static update() {
@@ -59,7 +67,7 @@ class Game {
         __PLAYFRAME = 0
         __ENTITYINDEX = 0
       } 
-    } else {
+    } else if (__SOUNDCOOLDOWN > 0) {
       __SOUNDCOOLDOWN = __SOUNDCOOLDOWN - 1
     }
 
@@ -69,14 +77,14 @@ class Game {
   static playEntityLocations() {
     if (__PLAYINGENTITIES) {
       if (__PLAYFRAME == 0) {
-        playSound(__ENTITIES[__ENTITYINDEX])
-      
-        if (__ENTITYINDEX < __ENTITIES.count - 1) {
+        if (__ENTITYINDEX < __ENTITIES.count) {
+          playSound(__ENTITIES[__ENTITYINDEX])
           __ENTITYINDEX = __ENTITYINDEX + 1
           __PLAYFRAME = __LOCATIONDELAY
         } else {
           __PLAYINGENTITIES = false
           __ENTITYINDEX = 0
+          __PLAYFRAME = 0
         }
       } else {
         __PLAYFRAME = __PLAYFRAME - 1
@@ -118,9 +126,9 @@ class Game {
   
   static draw(dt) {
     Canvas.cls()
-    Canvas.print("PAN: %(!__PLAYINGENTITIES)", 10, 10, Color.white)
-    Canvas.print("IN FRONT: %(__SOUNDCOOLDOWN)", 10, 20, Color.white)
-    Canvas.print("ENTITY ANGLE: %(getAngleOfEntity(__ENTITIES[0]))", 10, 30, Color.white)
-    Canvas.print("ENTITY DISTANCE: %(getAngleOfEntity(__ENTITIES[1]))", 10, 40, Color.white)
+    Canvas.print("PAN A: %(__PLAYFRAME))", 10, 10, Color.white)
+    Canvas.print("PAN B: %(__ENTITYINDEX))", 10, 20, Color.white)
+    Canvas.print("ENTITY ANGLE A: %(__PLAYINGENTITIES))", 10, 30, Color.white)
+    Canvas.print("ENTITY ANGLE B: %(__SOUNDCOOLDOWN))", 10, 40, Color.white)
   }
 }
